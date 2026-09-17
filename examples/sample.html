@@ -12,6 +12,9 @@
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 60px; }
     article { padding: 22px; background: #f8faf6; border-top: 4px solid #172126; }
     article strong { display: block; font: 42px Georgia, serif; }
+    details { margin-top: 44px; padding: 18px 22px; background: #f8faf6; }
+    summary { cursor: pointer; font-weight: 700; }
+    details p { max-width: 62ch; }
     @media (max-width: 650px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -29,6 +32,10 @@
       <g id="baseline"><title>Baseline</title><path d="M20 125 L180 100 L340 105 L580 82" fill="none" stroke="#315b78" stroke-width="7"/></g>
       <g id="annotated-loop"><title>Annotated workflow</title><path d="M20 120 L180 72 L340 45 L580 20" fill="none" stroke="#bc4d2c" stroke-width="7"/></g>
     </svg>
+    <details>
+      <summary>How these numbers were counted</summary>
+      <p id="method">Decisions are counted once per annotation bundle, so a review that produced four notes counts as one decision.</p>
+    </details>
   </main>
 </body>
 </html>

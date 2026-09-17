@@ -20,6 +20,7 @@ export function formatAnnotations(bundle, bundlePath) {
         : `${annotation.anchor.startLine}`;
       lines.push(`Lines: ${range}`);
     }
+    if (annotation.anchor.region) lines.push(`Inside: ${annotation.anchor.region}`);
     if (annotation.anchor.selector) lines.push(`Element: ${annotation.anchor.selector}`);
     if (annotation.anchor.diagramElement) lines.push(`Diagram element: ${annotation.anchor.diagramElement}`);
     if (annotation.anchor.assetPath) lines.push(`Asset: ${annotation.anchor.assetPath}`);
