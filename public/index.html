@@ -5,78 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artifact Annotator</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <link rel="preload" href="/static/fonts/ia-writer-quattro-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/fonts/ia-writer-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">A</span>
-        <div>
-          <strong>Artifact Annotator</strong>
-          <span id="artifact-name">Loading artifact...</span>
-        </div>
-      </div>
-      <div class="topbar-actions">
-        <span id="save-state" class="save-state">Draft saved</span>
-        <button id="toggle-inspect" class="button secondary" hidden>Pause inspector</button>
-        <button id="submit-review" class="button primary">Submit annotations</button>
-      </div>
-    </header>
-
     <main class="workspace">
-      <section class="artifact-pane">
-        <div id="selection-bar" class="selection-bar" hidden>
-          <span id="selection-preview"></span>
-          <button id="annotate-selection" class="button compact">Annotate selection</button>
+      <section id="reader" class="reader">
+        <div id="inspect-strip" class="inspect-strip" hidden>
+          <span id="inspect-state" class="state fact">Inspector on. Click anything in the app to annotate it.</span>
+          <button id="toggle-inspect" class="btn btn--ghost">Pause inspector</button>
         </div>
-        <article id="markdown-artifact" class="markdown-document" hidden></article>
-        <div id="html-shell" class="html-shell" hidden>
-          <div class="inspect-hint">Inspector active: click an element in the artifact to annotate it.</div>
-          <iframe id="html-artifact" sandbox="allow-scripts allow-forms allow-modals allow-popups"></iframe>
-        </div>
+        <article id="markdown-artifact" class="doc" hidden></article>
+        <iframe
+          id="html-artifact"
+          class="html-artifact"
+          title="Artifact under review"
+          sandbox="allow-scripts allow-forms allow-modals allow-popups"
+          hidden></iframe>
       </section>
 
-      <aside class="sidebar">
-        <section class="sidebar-heading">
-          <div>
-            <p class="eyebrow">Annotation bundle</p>
-            <h1>Feedback</h1>
+      <aside class="review">
+        <header class="review-head">
+          <div class="review-id">
+            <span id="artifact-name" class="artifact-path fact">Opening artifact</span>
+            <span class="review-status fact">
+              <span><span class="held-cursor"></span>held<span id="held-clock" style="margin-left:9px">00:00</span></span>
+              <span id="save-state" class="save-state">draft saved</span>
+            </span>
           </div>
-          <span id="annotation-count" class="count">0</span>
-        </section>
+          <button id="submit-review" class="btn btn--send">Send notes back</button>
+        </header>
 
-        <section class="overall-section">
-          <label for="overall-feedback">Overall instructions</label>
-          <textarea id="overall-feedback" rows="4" placeholder="Feedback that applies to the artifact as a whole..."></textarea>
-        </section>
-
-        <section id="composer" class="composer" hidden>
-          <div class="composer-header">
-            <strong>New annotation</strong>
-            <button id="close-composer" class="icon-button" aria-label="Close">×</button>
-          </div>
-          <div id="anchor-card" class="anchor-card"></div>
-          <div class="intent-picker" role="group" aria-label="Annotation type">
-            <button class="intent active" data-intent="change">Change</button>
-            <button class="intent" data-intent="question">Question</button>
-            <button class="intent" data-intent="note">Note</button>
-          </div>
-          <textarea id="annotation-comment" rows="4" placeholder="What should the agent know?"></textarea>
-          <button id="add-annotation" class="button primary full">Add annotation</button>
-        </section>
-
-        <div id="empty-state" class="empty-state">
-          <span>⌁</span>
-          <p>Select text or choose a rendered block to attach feedback precisely.</p>
+        <div id="feed" class="feed">
+          <section class="overall">
+            <label for="overall-feedback">Anything that applies to the whole artifact</label>
+            <textarea
+              id="overall-feedback"
+              class="field"
+              rows="2"
+              placeholder="Optional. The agent reads this before the anchored notes."></textarea>
+          </section>
+          <p id="empty-state" class="idle">
+            No notes yet. Select a passage, or hover a block and use the + in its margin.
+          </p>
+          <ol id="annotation-list" class="entries"></ol>
         </div>
-        <ol id="annotation-list" class="annotation-list"></ol>
+
+        <div id="composer" class="prompt">
+          <div id="anchor-card" class="anchor-line" role="status" aria-live="polite"></div>
+          <textarea
+            id="annotation-comment"
+            class="field"
+            aria-label="Note on the selected anchor"
+            rows="3"
+            placeholder="Select a passage, then say what should change."
+            disabled></textarea>
+          <div class="prompt-row">
+            <div id="intent-picker" class="intents" role="group" aria-label="Kind of note">
+              <button class="intent" data-intent="change" aria-pressed="true">
+                <span class="glyph glyph--change"></span>Change
+              </button>
+              <button class="intent" data-intent="question" aria-pressed="false">
+                <span class="glyph glyph--question"></span>Question
+              </button>
+              <button class="intent" data-intent="note" aria-pressed="false">
+                <span class="glyph glyph--note"></span>Note
+              </button>
+            </div>
+            <button id="add-annotation" class="btn btn--ghost" disabled>Add note</button>
+          </div>
+        </div>
       </aside>
     </main>
 
-    <div id="submitted" class="submitted" hidden>
-      <div>
-        <span class="submitted-mark">✓</span>
-        <h2>Annotations submitted</h2>
-        <p>You can close this tab. The agent now has your feedback.</p>
+    <div id="submitted" class="sent" hidden>
+      <div class="sent-inner">
+        <div id="sent-marks" class="sent-marks"></div>
+        <h2>Sent. Your terminal has it.</h2>
+        <p id="sent-detail">Close this tab whenever you like.</p>
       </div>
     </div>
 

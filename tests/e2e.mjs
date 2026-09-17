@@ -29,10 +29,12 @@ async function testMarkdown(browser) {
 
   const diagramBlock = page.locator(".markdown-block").filter({ has: page.locator(".mermaid-diagram") });
   await diagramBlock.locator(".node").first().click();
+  await page.locator("#annotation-comment:not([disabled])").waitFor();
   await page.locator("#annotation-comment").fill("Rename this diagram stage.");
   await page.locator("#add-annotation").click();
 
   await page.locator("img[alt='Three connected stages']").click();
+  await page.locator("#annotation-comment:not([disabled])").waitFor();
   await page.locator("#annotation-comment").fill("Make this exported diagram larger.");
   await page.locator("#add-annotation").click();
 
@@ -44,10 +46,12 @@ async function testMarkdown(browser) {
     selection.addRange(range);
     document.dispatchEvent(new Event("selectionchange"));
   });
-  await page.locator("#annotate-selection").click();
+  await page.locator("#annotation-comment:not([disabled])").waitFor();
   await page.locator("#annotation-comment").fill("Make this opening more concrete.");
   await page.locator("#add-annotation").click();
+  await page.locator(".entry").first().hover();
   await page.locator("#overall-feedback").fill("Keep the report concise.");
+  assert.equal(await page.locator(".markdown-block .mark").count() > 0, true, "anchored text is marked in the document");
   await page.screenshot({ path: resolve(root, "test-results/markdown.png"), fullPage: true });
   await page.locator("#submit-review").click();
   await page.locator("#submitted:not([hidden])").waitFor();
@@ -66,7 +70,7 @@ async function testMarkdown(browser) {
   assert.equal(bundle.annotations[2].anchor.type, "selection");
   assert.equal(bundle.annotations[2].anchor.startLine, 3);
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.locator(".sidebar").waitFor();
+  await page.locator(".review").waitFor();
   await page.close();
 }
 
@@ -77,12 +81,20 @@ async function testHtml(browser) {
   await page.goto(url);
   const frame = page.frameLocator("#html-artifact");
   await frame.locator("article").first().click();
-  await page.locator("#composer:not([hidden])").waitFor();
+  await page.locator("#annotation-comment:not([disabled])").waitFor();
   await page.locator("#annotation-comment").fill("Emphasize this metric.");
   await page.locator("#add-annotation").click();
   await frame.locator("svg#trend g#annotated-loop path").dispatchEvent("click");
+  await page.locator("#annotation-comment:not([disabled])").waitFor();
   await page.locator("#annotation-comment").fill("Use a less optimistic trend line.");
   await page.locator("#add-annotation").click();
+
+  await page.locator("#toggle-inspect").click();
+  assert.equal(await page.locator("#toggle-inspect").innerText(), "Resume inspector");
+  await page.locator("#toggle-inspect").click();
+  await page.locator(".entry").first().hover();
+  await frame.locator(".artifact-annotator-reveal").waitFor();
+
   await page.screenshot({ path: resolve(root, "test-results/html.png"), fullPage: true });
   await page.locator("#submit-review").click();
 

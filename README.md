@@ -24,9 +24,11 @@ artifact-annotator path/to/report.md
 artifact-annotator path/to/app.html
 ```
 
-The command binds a temporary server to `127.0.0.1`, opens the artifact, and blocks until **Submit annotations** is pressed. It then saves the full JSON bundle under the operating system's temporary directory, prints its path and a readable Markdown version to stdout, and exits.
+The command binds a temporary server to `127.0.0.1`, opens the artifact, and blocks until **Send notes back** is pressed. It then saves the full JSON bundle under the operating system's temporary directory, prints its path and a readable Markdown version to stdout, and exits.
 
 Markdown annotations carry their section, source line range, and selected text. Mermaid fences render as diagrams and support whole-block or individual diagram-element annotations. Relative Markdown images, including SVG files, are served from the current workspace and can be annotated as image blocks.
+
+The artifact renders on the left and the review you are assembling renders on the right, in the order the agent will read it. Select a passage or click an element to anchor a note, tag it as a change, a question, or a note, and add it with `Cmd`/`Ctrl` + `Enter`. Anchored passages stay marked in the document; hovering a note points back at what it is attached to.
 
 HTML annotations carry a CSS selector, nearby heading, rendered text, element metadata, and viewport size. Inline SVG clicks also capture the nearest named SVG group, visible label, and coordinates. HTML artifacts run in a sandboxed iframe; pause the inspector to interact with the app normally.
 
@@ -45,6 +47,10 @@ npm test
 artifact-annotator examples/sample.md
 artifact-annotator examples/sample.html
 ```
+
+## Interface
+
+The browser interface is build-free and fully local. It is set in iA Writer Quattro and iA Writer Mono, vendored under `public/fonts/`, so the UI renders identically with no network access.
 
 ## Security
 

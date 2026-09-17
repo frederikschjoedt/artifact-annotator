@@ -1,18 +1,42 @@
 (() => {
   let active = true;
   let highlighted = null;
+  let revealTimer = null;
   const style = document.createElement("style");
   style.textContent = `
-    .artifact-annotator-hover { outline: 3px solid #e76838 !important; outline-offset: 3px !important; cursor: crosshair !important; }
-    ::selection { background: rgba(231, 104, 56, .28); }
+    .artifact-annotator-hover { outline: 2px solid #ff3d8f !important; outline-offset: 3px !important; cursor: crosshair !important; }
+    .artifact-annotator-reveal { outline: 2px solid #ff3d8f !important; outline-offset: 3px !important; background: rgba(255, 61, 143, .16) !important; }
+    ::selection { background: rgba(255, 61, 143, .24); }
   `;
   document.documentElement.append(style);
 
   window.addEventListener("message", (event) => {
-    if (event.data?.source !== "artifact-annotator-parent" || event.data.type !== "set-active") return;
-    active = Boolean(event.data.active);
-    clearHighlight();
+    if (event.data?.source !== "artifact-annotator-parent") return;
+    if (event.data.type === "set-active") {
+      active = Boolean(event.data.active);
+      return clearHighlight();
+    }
+    if (event.data.type === "reveal") reveal(event.data.selector);
   });
+
+  // Hovering a note in the review pane points back at the element it is attached to.
+  function reveal(selector) {
+    clearTimeout(revealTimer);
+    document.querySelectorAll(".artifact-annotator-reveal").forEach((node) => {
+      node.classList.remove("artifact-annotator-reveal");
+    });
+    if (!selector) return;
+    let target = null;
+    try {
+      target = document.querySelector(selector);
+    } catch {
+      return;
+    }
+    if (!target) return;
+    target.classList.add("artifact-annotator-reveal");
+    target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    revealTimer = setTimeout(() => target.classList.remove("artifact-annotator-reveal"), 900);
+  }
 
   document.addEventListener("mouseover", (event) => {
     if (!active || event.target === document.documentElement || event.target === document.body) return;

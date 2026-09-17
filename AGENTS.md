@@ -10,6 +10,8 @@ Artifact Annotator is a local, blocking CLI for collecting anchored feedback on 
 - `src/markdown.js` - source-aware Markdown parsing and sanitization.
 - `src/format.js` - annotation bundle formatting.
 - `public/` - dependency-free browser interface and HTML/SVG inspector.
+- `public/styles.css` - the design system: tokens, artifact typography, review pane.
+- `public/fonts/` - vendored iA Writer Quattro and Mono, served locally.
 - `skills/annotate/SKILL.md` - canonical user-invoked agent skill.
 - `examples/` - manual and browser-test fixtures.
 - `tests/` - Node tests and Playwright end-to-end coverage.
@@ -22,6 +24,9 @@ Artifact Annotator is a local, blocking CLI for collecting anchored feedback on 
 - Treat reviewed HTML as executable and keep it inside the sandboxed iframe.
 - Sanitize rendered Markdown and constrain local asset access to the allowed workspace root.
 - Preserve human-readable context in every anchor; selectors and generated element IDs are supporting metadata, not sufficient anchors by themselves.
+- Keep every asset local. Fonts are vendored under `public/fonts/`; the interface must render correctly with no network access.
+- Keep the artifact the only light surface and the application chrome dark. The pink accent is reserved for annotation marks and the primary send action, never for body text or decoration.
+- Encode annotation intent with the shape of a mark (filled, hollow, bar), not with additional colours.
 - Keep `skills/annotate/SKILL.md` user-invoked with `disable-model-invocation: true`.
 
 ## Verification
