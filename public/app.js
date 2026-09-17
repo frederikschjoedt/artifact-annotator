@@ -75,7 +75,6 @@ async function renderMarkdown(blocks) {
         section: block.section,
         startLine: block.startLine,
         endLine: block.endLine,
-        diagramElement: diagramTarget.id || diagramTarget.getAttribute("data-id") || diagramTarget.classList[0] || diagramTarget.tagName.toLowerCase(),
         quote: diagramLabel(diagramTarget) || block.text.slice(0, 500)
       });
     }

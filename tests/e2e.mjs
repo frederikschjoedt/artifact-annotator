@@ -65,6 +65,7 @@ async function testMarkdown(browser) {
   const bundle = JSON.parse(await readFile(bundlePath, "utf8"));
   assert.equal(bundle.annotations.length, 3);
   assert.equal(bundle.annotations[0].anchor.type, "diagram-element");
+  assert.equal(bundle.annotations[0].anchor.diagramElement, undefined);
   assert.equal(bundle.annotations[1].anchor.type, "image");
   assert.equal(bundle.annotations[1].anchor.assetPath, "./workflow.svg");
   assert.equal(bundle.annotations[2].anchor.type, "selection");
@@ -89,9 +90,19 @@ async function testHtml(browser) {
   await page.locator("#annotation-comment").fill("Use a less optimistic trend line.");
   await page.locator("#add-annotation").click();
 
+  // Pausing hands clicks back to the app, which is the only way to reach content
+  // behind a disclosure and annotate it.
   await page.locator("#toggle-inspect").click();
   assert.equal(await page.locator("#toggle-inspect").innerText(), "Resume inspector");
+  await frame.locator("summary").click();
+  await frame.locator("#method").waitFor({ state: "visible" });
   await page.locator("#toggle-inspect").click();
+
+  await frame.locator("#method").click();
+  await page.locator("#annotation-comment:not([disabled])").waitFor();
+  await page.locator("#annotation-comment").fill("Define what counts as a decision.");
+  await page.locator("#add-annotation").click();
+
   await page.locator(".entry").first().hover();
   await frame.locator(".artifact-annotator-reveal").waitFor();
 
@@ -104,6 +115,7 @@ async function testHtml(browser) {
   assert.match(result.stdout, /Element: .*article/);
   assert.match(result.stdout, /Diagram element: annotated-loop/);
   assert.match(result.stdout, /> Annotated workflow/);
+  assert.match(result.stdout, /Inside: How these numbers were counted/);
   await page.close();
 }
 

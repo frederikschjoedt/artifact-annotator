@@ -62,6 +62,7 @@
         selector: selectorFor(target),
         tag: target.tagName.toLowerCase(),
         section: nearestHeading(target),
+        region: enclosingRegion(target),
         quote: (selection || svgContext.label || target.innerText || target.textContent || target.getAttribute("aria-label") || "").trim().slice(0, 1000),
         classes: [...target.classList].filter((name) => name !== "artifact-annotator-hover"),
         diagramElement: svgContext.element,
@@ -101,6 +102,19 @@
     const headings = [...document.querySelectorAll("h1, h2, h3, h4, h5, h6")];
     const preceding = headings.filter((heading) => heading.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING);
     return preceding.at(-1)?.innerText.trim() || document.title || "HTML artifact";
+  }
+
+  // A note taken inside a tab, dialog, or details panel is unreadable without the
+  // name of the thing that was open at the time.
+  function enclosingRegion(element) {
+    const region = element.closest('[role="tabpanel"], [role="dialog"], [role="region"], dialog, details');
+    if (!region) return undefined;
+    const labelledBy = region.getAttribute("aria-labelledby");
+    const name = region.getAttribute("aria-label")
+      || (labelledBy && document.getElementById(labelledBy)?.innerText)
+      || region.querySelector("summary, legend, h1, h2, h3")?.innerText
+      || "";
+    return name.replace(/\s+/g, " ").trim().slice(0, 200) || undefined;
   }
 
   function describeSvg(element) {
