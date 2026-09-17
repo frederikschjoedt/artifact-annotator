@@ -32,15 +32,37 @@ export function renderMarkdown(source) {
 
       if (token.type === "heading") currentHeading = token.text;
 
+      const isMermaid = token.type === "code" && token.lang?.trim().toLowerCase() === "mermaid";
       return {
         id: `block-${index + 1}`,
+        kind: isMermaid ? "mermaid" : "markdown",
         startLine,
         endLine,
         section: currentHeading,
         text: plainText(token),
-        html: sanitizeHtml(marked.parser([token]), sanitizeOptions)
+        source: isMermaid ? token.text : undefined,
+        html: isMermaid
+          ? `<div class="mermaid-diagram" aria-label="Mermaid diagram"></div>`
+          : sanitizeHtml(marked.parser([token]), {
+              ...sanitizeOptions,
+              transformTags: {
+                ...sanitizeOptions.transformTags,
+                img: (tagName, attributes) => ({
+                  tagName,
+                  attribs: {
+                    ...attributes,
+                    src: localAssetUrl(attributes.src)
+                  }
+                })
+              }
+            })
       };
     });
+}
+
+function localAssetUrl(source = "") {
+  if (!source || /^(?:[a-z]+:|\/\/|#)/i.test(source)) return source;
+  return `/assets/${encodeURIComponent(source)}`;
 }
 
 function lineAt(source, offset) {

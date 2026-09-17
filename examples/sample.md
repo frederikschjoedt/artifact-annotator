@@ -15,3 +15,13 @@ An artifact should open in the form its author intended. Markdown becomes a docu
 | One local artifact | Anchored comments | One annotation bundle |
 
 The process ends when the reviewer submits the complete bundle.
+
+## Diagram support
+
+```mermaid
+flowchart LR
+  Draft[Draft artifact] --> Annotate[Annotate visually]
+  Annotate --> Agent[Return to agent]
+```
+
+![Three connected stages](./workflow.svg)

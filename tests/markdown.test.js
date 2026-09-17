@@ -17,6 +17,13 @@ test("removes executable HTML from Markdown", () => {
   assert.doesNotMatch(blocks[0].html, /script/i);
 });
 
+test("identifies Mermaid blocks and rewrites relative images", () => {
+  const blocks = renderMarkdown("```mermaid\nflowchart LR\n  A --> B\n```\n\n![Map](./map.svg)\n");
+  assert.equal(blocks[0].kind, "mermaid");
+  assert.equal(blocks[0].source, "flowchart LR\n  A --> B");
+  assert.match(blocks[1].html, /src="\/assets\/.%2Fmap\.svg"/);
+});
+
 test("formats a readable annotation bundle", () => {
   const output = formatAnnotations({
     artifact: { path: "/tmp/report.md" },

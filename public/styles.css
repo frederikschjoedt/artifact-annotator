@@ -66,6 +66,11 @@ button { color: inherit; }
 .markdown-document pre code { padding: 0; background: transparent; }
 .markdown-document blockquote { margin-left: 0; padding-left: 20px; color: #56534b; border-left: 3px solid var(--accent); }
 .markdown-document img { max-width: 100%; }
+.markdown-document img, .mermaid-diagram svg { cursor: crosshair; }
+.mermaid-diagram { overflow-x: auto; margin: 24px 0; padding: 24px; background: #fbfaf6; border: 1px solid var(--line); border-radius: 8px; }
+.mermaid-diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.mermaid-diagram svg .node:hover, .mermaid-diagram svg [id]:hover, .mermaid-diagram svg .edgeLabel:hover { outline: 3px solid var(--accent); outline-offset: 3px; }
+.mermaid-error { color: #842f1b; background: #fff0e9; font: 14px/1.5 ui-monospace, monospace; white-space: pre-wrap; }
 .markdown-document table { width: 100%; border-collapse: collapse; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 15px; }
 .markdown-document th, .markdown-document td { padding: 10px; border-bottom: 1px solid var(--line); text-align: left; }
 

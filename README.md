@@ -26,7 +26,9 @@ artifact-annotator path/to/app.html
 
 The command binds a temporary server to `127.0.0.1`, opens the artifact, and blocks until **Submit annotations** is pressed. It then saves the full JSON bundle under the operating system's temporary directory, prints its path and a readable Markdown version to stdout, and exits.
 
-Markdown annotations carry their section, source line range, and selected text. HTML annotations carry a CSS selector, nearby heading, rendered text, element metadata, and viewport size. HTML artifacts run in a sandboxed iframe; pause the inspector to interact with the app normally.
+Markdown annotations carry their section, source line range, and selected text. Mermaid fences render as diagrams and support whole-block or individual diagram-element annotations. Relative Markdown images, including SVG files, are served from the current workspace and can be annotated as image blocks.
+
+HTML annotations carry a CSS selector, nearby heading, rendered text, element metadata, and viewport size. Inline SVG clicks also capture the nearest named SVG group, visible label, and coordinates. HTML artifacts run in a sandboxed iframe; pause the inspector to interact with the app normally.
 
 Use `--no-open` when the browser should not launch automatically.
 

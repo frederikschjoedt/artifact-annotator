@@ -29,6 +29,7 @@
     event.stopImmediatePropagation();
     const target = event.target;
     const selection = window.getSelection()?.toString().trim();
+    const svgContext = describeSvg(target);
     window.parent.postMessage({
       source: "artifact-annotator",
       type: "anchor",
@@ -37,8 +38,10 @@
         selector: selectorFor(target),
         tag: target.tagName.toLowerCase(),
         section: nearestHeading(target),
-        quote: (selection || target.innerText || target.getAttribute("aria-label") || "").trim().slice(0, 1000),
+        quote: (selection || svgContext.label || target.innerText || target.textContent || target.getAttribute("aria-label") || "").trim().slice(0, 1000),
         classes: [...target.classList].filter((name) => name !== "artifact-annotator-hover"),
+        diagramElement: svgContext.element,
+        svg: svgContext.metadata,
         viewport: { width: window.innerWidth, height: window.innerHeight }
       }
     }, "*");
@@ -74,5 +77,23 @@
     const headings = [...document.querySelectorAll("h1, h2, h3, h4, h5, h6")];
     const preceding = headings.filter((heading) => heading.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING);
     return preceding.at(-1)?.innerText.trim() || document.title || "HTML artifact";
+  }
+
+  function describeSvg(element) {
+    const svg = element.closest("svg");
+    if (!svg) return { label: "", element: undefined, metadata: undefined };
+    const group = element.closest("g[id]");
+    const title = element.querySelector?.("title")?.textContent || group?.querySelector("title")?.textContent || svg.querySelector("title")?.textContent;
+    const label = title || element.getAttribute("aria-label") || group?.getAttribute("aria-label") || group?.textContent || element.textContent || "";
+    const box = typeof element.getBBox === "function" ? element.getBBox() : null;
+    return {
+      label: label.replace(/\s+/g, " ").trim(),
+      element: element.id || group?.id || element.tagName.toLowerCase(),
+      metadata: {
+        svgId: svg.id || undefined,
+        groupId: group?.id || undefined,
+        coordinates: box ? { x: box.x, y: box.y, width: box.width, height: box.height } : undefined
+      }
+    };
   }
 })();

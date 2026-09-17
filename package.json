@@ -1,6 +1,6 @@
 {
   "name": "artifact-annotator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Annotate rendered Markdown and HTML artifacts, then return anchored feedback to a coding agent.",
   "type": "module",
   "bin": {
@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "marked": "^16.3.0",
+    "mermaid": "^11.17.2",
     "open": "^10.2.0",
     "sanitize-html": "^2.17.0"
   },

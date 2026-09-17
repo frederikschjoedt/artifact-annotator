@@ -27,3 +27,21 @@ test("protects APIs and resolves the blocking result on submission", async (cont
   const result = await server.result;
   assert.equal(result.overallFeedback, "Make it shorter.");
 });
+
+test("serves Markdown assets from the allowed root and blocks traversal", async (context) => {
+  const server = await createAnnotationServer({
+    filePath: new URL("../examples/sample.md", import.meta.url).pathname,
+    content: "![Diagram](./workflow.svg)",
+    kind: "markdown",
+    sessionId: "asset-test",
+    assetRoot: new URL("../", import.meta.url).pathname
+  });
+  context.after(() => server.close());
+
+  const asset = await fetch(`${server.url}/assets/${encodeURIComponent("./workflow.svg")}`);
+  assert.equal(asset.status, 200);
+  assert.match(asset.headers.get("content-type"), /image\/svg\+xml/);
+
+  const traversal = await fetch(`${server.url}/assets/${encodeURIComponent("../../../../etc/passwd")}`);
+  assert.equal(traversal.status, 403);
+});

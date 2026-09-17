@@ -24,6 +24,17 @@ async function testMarkdown(browser) {
   if (await page.locator(".markdown-block").count() === 0) {
     throw new Error(`Markdown did not render: ${await page.locator("body").innerText()}`);
   }
+  await page.locator(".mermaid-diagram[data-rendered=true] svg").waitFor();
+  await page.locator("img[alt='Three connected stages']").waitFor();
+
+  const diagramBlock = page.locator(".markdown-block").filter({ has: page.locator(".mermaid-diagram") });
+  await diagramBlock.locator(".node").first().click();
+  await page.locator("#annotation-comment").fill("Rename this diagram stage.");
+  await page.locator("#add-annotation").click();
+
+  await page.locator("img[alt='Three connected stages']").click();
+  await page.locator("#annotation-comment").fill("Make this exported diagram larger.");
+  await page.locator("#add-annotation").click();
 
   await page.locator(".markdown-block").nth(1).evaluate((block) => {
     const range = document.createRange();
@@ -48,9 +59,12 @@ async function testMarkdown(browser) {
   const bundlePath = result.stdout.match(/^Bundle: (.+)$/m)?.[1];
   assert.ok(bundlePath);
   const bundle = JSON.parse(await readFile(bundlePath, "utf8"));
-  assert.equal(bundle.annotations.length, 1);
-  assert.equal(bundle.annotations[0].anchor.type, "selection");
-  assert.equal(bundle.annotations[0].anchor.startLine, 3);
+  assert.equal(bundle.annotations.length, 3);
+  assert.equal(bundle.annotations[0].anchor.type, "diagram-element");
+  assert.equal(bundle.annotations[1].anchor.type, "image");
+  assert.equal(bundle.annotations[1].anchor.assetPath, "./workflow.svg");
+  assert.equal(bundle.annotations[2].anchor.type, "selection");
+  assert.equal(bundle.annotations[2].anchor.startLine, 3);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator(".sidebar").waitFor();
   await page.close();
@@ -66,6 +80,9 @@ async function testHtml(browser) {
   await page.locator("#composer:not([hidden])").waitFor();
   await page.locator("#annotation-comment").fill("Emphasize this metric.");
   await page.locator("#add-annotation").click();
+  await frame.locator("svg#trend g#annotated-loop path").dispatchEvent("click");
+  await page.locator("#annotation-comment").fill("Use a less optimistic trend line.");
+  await page.locator("#add-annotation").click();
   await page.screenshot({ path: resolve(root, "test-results/html.png"), fullPage: true });
   await page.locator("#submit-review").click();
 
@@ -73,6 +90,8 @@ async function testHtml(browser) {
   assert.equal(result.code, 0, result.stderr);
   assert.match(result.stdout, /Emphasize this metric/);
   assert.match(result.stdout, /Element: .*article/);
+  assert.match(result.stdout, /Diagram element: annotated-loop/);
+  assert.match(result.stdout, /> Annotated workflow/);
   await page.close();
 }
 

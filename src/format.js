@@ -21,6 +21,8 @@ export function formatAnnotations(bundle, bundlePath) {
       lines.push(`Lines: ${range}`);
     }
     if (annotation.anchor.selector) lines.push(`Element: ${annotation.anchor.selector}`);
+    if (annotation.anchor.diagramElement) lines.push(`Diagram element: ${annotation.anchor.diagramElement}`);
+    if (annotation.anchor.assetPath) lines.push(`Asset: ${annotation.anchor.assetPath}`);
     if (annotation.anchor.viewport) {
       lines.push(`Viewport: ${annotation.anchor.viewport.width}x${annotation.anchor.viewport.height}`);
     }

@@ -6,9 +6,11 @@ import { fileURLToPath } from "node:url";
 import { renderMarkdown } from "./markdown.js";
 
 const publicDirectory = resolve(fileURLToPath(new URL("../public/", import.meta.url)));
+const mermaidDirectory = resolve(fileURLToPath(new URL("../node_modules/mermaid/dist/", import.meta.url)));
 const contentTypes = {
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".png": "image/png",
   ".jpg": "image/jpeg",
@@ -20,7 +22,7 @@ const contentTypes = {
   ".woff2": "font/woff2"
 };
 
-export async function createAnnotationServer({ filePath, content, kind, sessionId }) {
+export async function createAnnotationServer({ filePath, content, kind, sessionId, assetRoot = dirname(filePath) }) {
   const token = randomBytes(24).toString("hex");
   let settleResult;
   let settled = false;
@@ -37,6 +39,9 @@ export async function createAnnotationServer({ filePath, content, kind, sessionI
       }
       if (url.pathname.startsWith("/static/") && request.method === "GET") {
         return sendPublicFile(response, url.pathname.slice("/static/".length));
+      }
+      if (url.pathname.startsWith("/vendor/mermaid/") && request.method === "GET") {
+        return sendContainedFile(response, mermaidDirectory, url.pathname.slice("/vendor/mermaid/".length));
       }
       if (url.pathname === "/api/artifact" && request.method === "GET") {
         requireToken(request, url, token);
@@ -71,6 +76,9 @@ export async function createAnnotationServer({ filePath, content, kind, sessionI
       if (kind === "html" && url.pathname.startsWith("/content/") && request.method === "GET") {
         return serveHtmlArtifact(response, url.pathname, filePath, content);
       }
+      if (kind === "markdown" && url.pathname.startsWith("/assets/") && request.method === "GET") {
+        return serveMarkdownAsset(response, url.pathname, filePath, assetRoot);
+      }
 
       response.writeHead(404).end("Not found");
     } catch (error) {
@@ -97,8 +105,12 @@ export async function createAnnotationServer({ filePath, content, kind, sessionI
 }
 
 async function sendPublicFile(response, requestedPath) {
-  const filePath = resolve(publicDirectory, normalize(requestedPath));
-  if (!filePath.startsWith(`${publicDirectory}${sep}`)) return response.writeHead(403).end("Forbidden");
+  return sendContainedFile(response, publicDirectory, requestedPath);
+}
+
+async function sendContainedFile(response, root, requestedPath) {
+  const filePath = resolve(root, normalize(requestedPath));
+  if (!isWithin(root, filePath)) return response.writeHead(403).end("Forbidden");
   return sendFile(response, filePath);
 }
 
@@ -130,6 +142,17 @@ async function serveHtmlArtifact(response, pathname, entryPath, entryContent) {
     "cache-control": "no-store"
   });
   response.end(body);
+}
+
+async function serveMarkdownAsset(response, pathname, markdownPath, assetRoot) {
+  const requestedPath = decodeURIComponent(pathname.slice("/assets/".length));
+  const filePath = resolve(dirname(markdownPath), normalize(requestedPath));
+  if (!isWithin(resolve(assetRoot), filePath)) return response.writeHead(403).end("Forbidden");
+  return sendFile(response, filePath);
+}
+
+function isWithin(root, filePath) {
+  return filePath === root || filePath.startsWith(`${root}${sep}`);
 }
 
 function injectInspector(html) {

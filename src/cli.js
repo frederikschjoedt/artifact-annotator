@@ -1,6 +1,6 @@
 import { access, readFile, writeFile, mkdir } from "node:fs/promises";
 import { constants } from "node:fs";
-import { basename, extname, resolve } from "node:path";
+import { basename, dirname, extname, relative, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import open from "open";
@@ -38,7 +38,11 @@ export async function run(args) {
   const outputDirectory = resolve(tmpdir(), "artifact-annotator", sessionId);
   await mkdir(outputDirectory, { recursive: true });
 
-  const server = await createAnnotationServer({ filePath, content, kind, sessionId });
+  const relativeToWorkspace = relative(process.cwd(), filePath);
+  const assetRoot = relativeToWorkspace && !relativeToWorkspace.startsWith("..")
+    ? process.cwd()
+    : dirname(filePath);
+  const server = await createAnnotationServer({ filePath, content, kind, sessionId, assetRoot });
   const url = `${server.url}/?token=${server.token}`;
 
   console.error(`Annotating ${basename(filePath)}`);

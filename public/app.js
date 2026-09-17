@@ -35,13 +35,13 @@ async function init() {
     elements["overall-feedback"].value = state.overallFeedback;
   }
 
-  if (response.artifact.kind === "markdown") renderMarkdown(response.blocks);
+  if (response.artifact.kind === "markdown") await renderMarkdown(response.blocks);
   else renderHtml(response.htmlUrl);
   bindControls();
   renderAnnotations();
 }
 
-function renderMarkdown(blocks) {
+async function renderMarkdown(blocks) {
   elements["markdown-artifact"].hidden = false;
   elements["markdown-artifact"].innerHTML = blocks.map((block) => `
     <section class="markdown-block" data-block='${escapeAttribute(JSON.stringify(block))}'>
@@ -50,6 +50,34 @@ function renderMarkdown(blocks) {
     </section>`).join("");
 
   elements["markdown-artifact"].addEventListener("click", (event) => {
+    const diagramTarget = event.target.closest(".mermaid-diagram svg [id], .mermaid-diagram svg .node, .mermaid-diagram svg .edgeLabel");
+    if (diagramTarget) {
+      const block = JSON.parse(diagramTarget.closest(".markdown-block").dataset.block);
+      openComposer({
+        type: "diagram-element",
+        section: block.section,
+        startLine: block.startLine,
+        endLine: block.endLine,
+        diagramElement: diagramTarget.id || diagramTarget.getAttribute("data-id") || diagramTarget.classList[0] || diagramTarget.tagName.toLowerCase(),
+        quote: diagramLabel(diagramTarget) || block.text.slice(0, 500)
+      });
+      return;
+    }
+
+    const image = event.target.closest(".block-content img");
+    if (image) {
+      const block = JSON.parse(image.closest(".markdown-block").dataset.block);
+      openComposer({
+        type: "image",
+        section: block.section,
+        startLine: block.startLine,
+        endLine: block.endLine,
+        assetPath: decodeAssetPath(image.getAttribute("src")),
+        quote: image.alt || block.text || "Image"
+      });
+      return;
+    }
+
     const button = event.target.closest(".block-annotate");
     if (!button) return;
     const block = JSON.parse(button.closest(".markdown-block").dataset.block);
@@ -63,6 +91,39 @@ function renderMarkdown(blocks) {
   });
 
   document.addEventListener("selectionchange", captureMarkdownSelection);
+  await renderMermaid(blocks);
+}
+
+async function renderMermaid(blocks) {
+  const diagrams = [...document.querySelectorAll(".mermaid-diagram")];
+  if (diagrams.length === 0) return;
+
+  const { default: mermaid } = await import("/vendor/mermaid/mermaid.esm.min.mjs");
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", theme: "neutral" });
+  for (const [index, container] of diagrams.entries()) {
+    const blockElement = container.closest(".markdown-block");
+    const block = JSON.parse(blockElement.dataset.block);
+    try {
+      const { svg } = await mermaid.render(`artifact-diagram-${index}`, block.source);
+      container.innerHTML = svg;
+      container.dataset.rendered = "true";
+    } catch (error) {
+      container.classList.add("mermaid-error");
+      container.textContent = `Could not render Mermaid diagram: ${error.message}`;
+    }
+  }
+}
+
+function diagramLabel(element) {
+  return (element.textContent || element.getAttribute("aria-label") || element.querySelector("title")?.textContent || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 1000);
+}
+
+function decodeAssetPath(source) {
+  const prefix = "/assets/";
+  return source.startsWith(prefix) ? decodeURIComponent(source.slice(prefix.length)) : source;
 }
 
 function captureMarkdownSelection() {
@@ -204,6 +265,8 @@ function renderAnnotations() {
 }
 
 function describeAnchor(anchor) {
+  if (anchor.type === "diagram-element") return "Diagram element";
+  if (anchor.type === "image") return "Image";
   return anchor.type === "element" ? anchor.tag?.toUpperCase() || "Element" : "Selection";
 }
 
