@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artifact Annotator</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">A</span>
+        <div>
+          <strong>Artifact Annotator</strong>
+          <span id="artifact-name">Loading artifact...</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span id="save-state" class="save-state">Draft saved</span>
+        <button id="toggle-inspect" class="button secondary" hidden>Pause inspector</button>
+        <button id="submit-review" class="button primary">Submit annotations</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="artifact-pane">
+        <div id="selection-bar" class="selection-bar" hidden>
+          <span id="selection-preview"></span>
+          <button id="annotate-selection" class="button compact">Annotate selection</button>
+        </div>
+        <article id="markdown-artifact" class="markdown-document" hidden></article>
+        <div id="html-shell" class="html-shell" hidden>
+          <div class="inspect-hint">Inspector active: click an element in the artifact to annotate it.</div>
+          <iframe id="html-artifact" sandbox="allow-scripts allow-forms allow-modals allow-popups"></iframe>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="sidebar-heading">
+          <div>
+            <p class="eyebrow">Annotation bundle</p>
+            <h1>Feedback</h1>
+          </div>
+          <span id="annotation-count" class="count">0</span>
+        </section>
+
+        <section class="overall-section">
+          <label for="overall-feedback">Overall instructions</label>
+          <textarea id="overall-feedback" rows="4" placeholder="Feedback that applies to the artifact as a whole..."></textarea>
+        </section>
+
+        <section id="composer" class="composer" hidden>
+          <div class="composer-header">
+            <strong>New annotation</strong>
+            <button id="close-composer" class="icon-button" aria-label="Close">×</button>
+          </div>
+          <div id="anchor-card" class="anchor-card"></div>
+          <div class="intent-picker" role="group" aria-label="Annotation type">
+            <button class="intent active" data-intent="change">Change</button>
+            <button class="intent" data-intent="question">Question</button>
+            <button class="intent" data-intent="note">Note</button>
+          </div>
+          <textarea id="annotation-comment" rows="4" placeholder="What should the agent know?"></textarea>
+          <button id="add-annotation" class="button primary full">Add annotation</button>
+        </section>
+
+        <div id="empty-state" class="empty-state">
+          <span>⌁</span>
+          <p>Select text or choose a rendered block to attach feedback precisely.</p>
+        </div>
+        <ol id="annotation-list" class="annotation-list"></ol>
+      </aside>
+    </main>
+
+    <div id="submitted" class="submitted" hidden>
+      <div>
+        <span class="submitted-mark">✓</span>
+        <h2>Annotations submitted</h2>
+        <p>You can close this tab. The agent now has your feedback.</p>
+      </div>
+    </div>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>
