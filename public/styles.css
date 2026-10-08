@@ -138,14 +138,20 @@ button { cursor: pointer; }
   line-height: 1.62;
 }
 .doc[hidden] { display: none; }
-.doc > * { margin: 0 auto; max-width: 36em; }
+.doc { overflow-x: hidden; }
+/* Prose keeps a readable measure, anchored to the left edge of the page.
+   Wide content (tables, code) may use the full page width and scrolls
+   inside its own block rather than widening the whole document. */
+.doc > * { margin: 0; max-width: 42em; }
+.doc > .markdown-block:has(> .block-content > table),
+.doc > .markdown-block:has(> .block-content > pre) { max-width: none; }
 
-.markdown-block { position: relative; margin-bottom: 1.15em; }
+.markdown-block { position: relative; margin-bottom: 1.15em; min-width: 0; }
 .markdown-block[data-heading="1"] { margin-bottom: 0.7em; }
-.markdown-block[data-heading="2"] { margin: 2.1em auto 0.55em; }
-.markdown-block[data-heading="3"] { margin: 1.8em auto 0.5em; }
+.markdown-block[data-heading="2"] { margin: 2.1em 0 0.55em; }
+.markdown-block[data-heading="3"] { margin: 1.8em 0 0.5em; }
 .markdown-block[data-heading="4"], .markdown-block[data-heading="5"], .markdown-block[data-heading="6"] {
-  margin: 1.5em auto 0.45em;
+  margin: 1.5em 0 0.45em;
 }
 .markdown-block:first-child { margin-top: 0; }
 .markdown-block:hover {
@@ -221,7 +227,11 @@ button { cursor: pointer; }
   background: var(--void);
   border-radius: var(--r-mark);
   padding: 16px 18px;
+  max-width: 100%;
+  width: max-content;
+  min-width: min(100%, 693px); /* match the prose measure */
   overflow-x: auto;
+  scrollbar-color: #4a5670 transparent;
 }
 .block-content pre code { padding: 0; background: none; border: 0; font-size: inherit; color: inherit; }
 
@@ -234,7 +244,16 @@ button { cursor: pointer; }
 }
 
 
-.block-content table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.block-content table {
+  display: block;
+  max-width: 100%;
+  width: max-content;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.block-content td, .block-content th { min-width: 8em; max-width: 34em; vertical-align: top; }
+.block-content td code { overflow-wrap: anywhere; }
 .block-content th {
   font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--ink-dim);
   text-align: left; padding: 0 12px 7px 0; border-bottom: 1px solid var(--rule-strong);
